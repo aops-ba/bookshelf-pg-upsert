@@ -27,10 +27,10 @@ module.exports = bookshelf => {
       // if there aren't any constraints on the model, let's try to find something that matches
       if (constraint.length) {
         const insert = knex(this.tableName).insert(insertionObject);
-        const update = knex().queryBuilder().update(updateAttributes);
+        const update = knex.queryBuilder().update(updateAttributes);
 
         return knex.raw(`? ON CONFLICT (${constraint.join(",")}) DO ? RETURNING *`, [insert, update])
-        .then(result => result[0].rows);
+        .then(result => result.rows[0]);
       } else {
         throw new Error("No constraints on this model");
       }
@@ -40,7 +40,7 @@ module.exports = bookshelf => {
       const knex = bookshelf.knex;
       const insert = knex(this.tableName).insert(attributes);
       return bookshelf.knex.raw("? ON CONFLICT DO NOTHING RETURNING *", [insert])
-      .then(result => result[0].rows);
+      .then(result => result.rows[0]);
     },
   });
 }
