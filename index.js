@@ -30,7 +30,7 @@ module.exports = bookshelf => {
           if (!results.length) {
             return this.forge().save(insertionObject, {method: "insert"});
           } else if (results.length === 1) {
-            return this.forge({id: results.id}).save(updateAttributes, {method: "update", patch: true});
+            return this.forge(results[0]).save(updateAttributes, {method: "update", patch: true});
           } else {
             throw new Error("Upsert query matches more than one row");
           }
