@@ -30,8 +30,7 @@ module.exports = bookshelf => {
         const update = knex().update(updateAttributes);
 
         return knex.raw(`? ON CONFLICT (${constraint.join(",")}) DO ? RETURNING *`, [insert, update])
-        .then(x => console.log(x))
-        .catch(e => console.log(e));
+        .then(result => result[0].rows);
       } else {
         throw new Error("No constraints on this model");
       }
@@ -40,7 +39,8 @@ module.exports = bookshelf => {
     safeInsert(attributes) {
       const knex = bookshelf.knex;
       const insert = knex(this.tableName).insert(attributes);
-      return bookshelf.knex.raw("? ON CONFLICT DO NOTHING RETURNING *", [insert]);
+      return bookshelf.knex.raw("? ON CONFLICT DO NOTHING RETURNING *", [insert])
+      .then(result => result[0].rows);
     },
   });
 }
