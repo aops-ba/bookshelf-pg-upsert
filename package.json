@@ -1,4 +1,9 @@
 {
+  "name": "bookshelf-pg-upsert",
+  "private": false,
+  "version": "0.1.0",
+  "description": "PG-specific ON CONFLICT DO upsert and safe insert for Bookshelf.js",
+  "keywords": ["bookshelf", "pg", "postgres", "upsert", "constraint", "conflict"],
   "dependencies": {
     "lodash": "^4.17.4"
   }
