@@ -27,7 +27,7 @@ module.exports = bookshelf => {
       // if there aren't any constraints on the model, let's try to find something that matches
       if (constraint.length) {
         const insert = knex(this.tableName).insert(insertionObject);
-        const update = knex().update(updateAttributes);
+        const update = knex().queryBuilder().update(updateAttributes);
 
         return knex.raw(`? ON CONFLICT (${constraint.join(",")}) DO ? RETURNING *`, [insert, update])
         .then(result => result[0].rows);
