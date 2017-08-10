@@ -8,12 +8,15 @@ module.exports = bookshelf => {
       // 'constraint' is the current model's attached constraint
       // updateAttributes are what we want to change if they already exist
       const queryAttributes = {};
-      // this only works with =s
-      // XXX: and probably "IS NULL"/"IS NOT NULL"? oh sheez.
+
+      // XXX: what about 'is not null'?
       this._knex._statements.forEach(c => {
         if (c.operator === "=") {
           queryAttributes[c.column] = c.value;
+        } else if (c.type === "whereNull") {
+          queryAttributes[c.column] = null;
         } else {
+          console.log(c);
           throw new Error("Invalid operator for upsertion");
         }
       });
@@ -28,9 +31,9 @@ module.exports = bookshelf => {
         return this.where(queryAttributes).fetchAll()
         .then(results => {
           if (!results.length) {
-            return this.forge().save(insertionObject, {method: "insert"});
+            return knex(this.tableName).insert(insertionObject);
           } else if (results.length === 1) {
-            return this.forge(results[0]).save(updateAttributes, {method: "update", patch: true});
+            return knex(this.tableName).update(updateAttributes).where(queryAttributes);
           } else {
             throw new Error("Upsert query matches more than one row");
           }
@@ -43,13 +46,12 @@ module.exports = bookshelf => {
         .then(x => console.log(x))
         .catch(e => console.log(e));
       }
-    }
-  },
+    },
 
     safeInsert(attributes) {
       const knex = bookshelf.knex;
       const insert = knex(this.tableName).insert(attributes);
       return bookshelf.knex.raw("? ON CONFLICT DO NOTHING RETURNING *", [insert]);
     },
-  })
+  });
 }
