@@ -3,7 +3,7 @@ const _ = require("lodash");
 module.exports = bookshelf => {
   bookshelf.Model = bookshelf.Model.extend({
 
-    upsert(updateAttributes) {
+    upsert(updateAttributes, constraint) {
       const knex = bookshelf.knex;
       // 'constraint' is the current model's attached constraint
       // updateAttributes are what we want to change if they already exist
@@ -20,8 +20,11 @@ module.exports = bookshelf => {
 
       const insertionObject = _.extend({}, queryAttributes, updateAttributes);
 
+      constraint = constraint || this.constraint || [];
+      constraint = constraint.map(c => `"${c}"`);
+
       // if there aren't any constraints on the model, let's try to find something that matches
-      if (!_.get(this, "constraints", []).length) {
+      if (!constraint.length) {
         return this.where(queryAttributes).fetchAll()
         .then(results => {
           if (!results.length) {
@@ -33,7 +36,6 @@ module.exports = bookshelf => {
           }
         });
       } else {
-        const constraint = Object.keys(this.constraint).map(c => `"${c}"`);
         const insert = knex(this.tableName).insert(insertionObject);
         const update = knex().update(updateAttributes);
 
